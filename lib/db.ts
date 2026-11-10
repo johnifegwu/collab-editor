@@ -1,7 +1,17 @@
 import Database from "better-sqlite3";
 import path from "path";
 
-const DB_PATH = path.join(process.cwd(), "collab.db");
+// Use DATABASE_URL env var (strips the "file:" prefix) or fall back to cwd
+function resolveDbPath(): string {
+  const url = process.env.DATABASE_URL;
+  if (url) {
+    // Strip "file:" prefix if present (e.g. "file:/data/collab.db" → "/data/collab.db")
+    return url.replace(/^file:/, "");
+  }
+  return path.join(process.cwd(), "collab.db");
+}
+
+const DB_PATH = resolveDbPath();
 
 let db: Database.Database;
 

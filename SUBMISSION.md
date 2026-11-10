@@ -38,6 +38,12 @@
 
 ---
 
+## Project Download
+
+[Download Project (Google Drive)](https://drive.google.com/file/d/1v8ecsxEX2Cj5cR49dJgpgSBuhIE7kHmJ/view?usp=sharing)
+
+---
+
 ## How to Run
 
 ```bash

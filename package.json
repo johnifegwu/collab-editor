@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "node -e \"try{require('@prisma/client')}catch(e){}\" || true"
   },
   "dependencies": {
     "@prisma/client": "^7.10.1",
