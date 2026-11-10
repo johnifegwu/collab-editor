@@ -1,68 +1,111 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import DocumentList from "@/components/DocumentList";
+import UserSwitcher from "@/components/UserSwitcher";
+import FileUpload from "@/components/FileUpload";
+import { MOCK_USERS, MockUserKey } from "@/lib/mockAuth";
+import { Document } from "@/lib/types";
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const [activeUser, setActiveUser] = useState<MockUserKey>("alice");
+  const [owned, setOwned] = useState<Document[]>([]);
+  const [shared, setShared] = useState<Document[]>([]);
+  const [newTitle, setNewTitle] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const currentUser = MOCK_USERS[activeUser];
+
+  const loadDocuments = useCallback(async () => {
+    setLoading(true);
+    const res = await fetch(`/api/documents?userId=${currentUser.id}`);
+    const data = await res.json();
+    setOwned(data.owned ?? []);
+    setShared(data.shared ?? []);
+    setLoading(false);
+  }, [currentUser.id]);
+
+  useEffect(() => {
+    loadDocuments();
+  }, [loadDocuments]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    const title = newTitle.trim() || "Untitled Document";
+    const res = await fetch("/api/documents", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, content: "", ownerId: currentUser.id }),
+    });
+    const doc = await res.json();
+    router.push(`/editor/${doc.id}`);
+  }
+
+  function handleDocumentDeleted(id: string) {
+    setOwned((prev) => prev.filter((d) => d.id !== id));
+  }
+
+  function handleDocumentRenamed(id: string, title: string) {
+    setOwned((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, title } : d))
+    );
+  }
+
+  function handleImport(title: string, docId: string) {
+    router.push(`/editor/${docId}`);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Top nav */}
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-lg font-bold text-gray-900">Collab Editor</h1>
+            <p className="text-xs text-gray-500">Lightweight collaborative document editor</p>
+          </div>
+          <UserSwitcher currentUser={activeUser} onChange={setActiveUser} />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+      </header>
+
+      <main className="max-w-4xl mx-auto px-6 py-8">
+        {/* Create + Import row */}
+        <div className="flex flex-wrap gap-3 mb-8">
+          <form onSubmit={handleCreate} className="flex gap-2 flex-1 min-w-[280px]">
+            <input
+              type="text"
+              placeholder="New document title..."
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-blue-400"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <button
+              type="submit"
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              + New
+            </button>
+          </form>
+          <FileUpload
+            currentUserId={currentUser.id}
+            onImport={handleImport}
+          />
         </div>
+
+        {/* Document list */}
+        {loading ? (
+          <div className="text-center py-12 text-gray-400 text-sm">Loading documents…</div>
+        ) : (
+          <DocumentList
+            owned={owned}
+            shared={shared}
+            currentUserId={currentUser.id}
+            onDocumentDeleted={handleDocumentDeleted}
+            onDocumentRenamed={handleDocumentRenamed}
+          />
+        )}
       </main>
     </div>
   );

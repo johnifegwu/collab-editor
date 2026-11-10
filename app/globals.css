@@ -1,26 +1,18 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* TipTap prose editor styles */
+.ProseMirror {
+  outline: none;
+  min-height: 400px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
+.ProseMirror h1 { font-size: 2em; font-weight: bold; margin: 0.5em 0; }
+.ProseMirror h2 { font-size: 1.5em; font-weight: bold; margin: 0.5em 0; }
+.ProseMirror h3 { font-size: 1.17em; font-weight: bold; margin: 0.5em 0; }
+.ProseMirror p { margin: 0.5em 0; }
+.ProseMirror ul { list-style-type: disc; padding-left: 1.5em; }
+.ProseMirror ol { list-style-type: decimal; padding-left: 1.5em; }
+.ProseMirror li { margin: 0.25em 0; }
+.ProseMirror strong { font-weight: bold; }
+.ProseMirror em { font-style: italic; }
+.ProseMirror u { text-decoration: underline; }
